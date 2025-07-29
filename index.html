@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Расчёт прибыли с СММ и дополнительными тратами</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fafafa;
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 20px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.1);
+    color: #222;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #111;
+  }
+  form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 30px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1.8px solid #ccc;
+    border-radius: 7px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="number"]:focus {
+    border-color: #4caf50;
+    outline: none;
+  }
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  .result {
+    margin-top: 30px;
+    background: #e6f4ea;
+    border: 1.5px solid #4caf50;
+    border-radius: 9px;
+    padding: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #2c5d34;
+  }
+</style>
+</head>
+<body>
+
+<h1>Расчёт прибыли с СММ и затратами</h1>
+
+<form id="calcForm" oninput="calculate()">
+  <div>
+    <label for="weight">Вес товара (кг)</label>
+    <input type="number" id="weight" min="0" step="any" value="10" />
+  </div>
+  <div>
+    <label for="percent">Процент СММщику (%)</label>
+    <input type="number" id="percent" min="0" step="any" value="7" />
+  </div>
+  <div>
+    <label for="purchasePrice">Цена закупки (сомони за кг)</label>
+    <input type="number" id="purchasePrice" min="0" step="any" value="24" />
+  </div>
+  <div>
+    <label for="sellingPrice">Цена продажи (сомони за кг)</label>
+    <input type="number" id="sellingPrice" min="0" step="any" value="28" />
+  </div>
+  <div class="full-width">
+    <label for="extraCosts">Дополнительные траты (такси, упаковка и прочее) сомони</label>
+    <input type="number" id="extraCosts" min="0" step="any" value="0" />
+  </div>
+</form>
+
+<div class="result" id="result">
+  Введите данные для расчёта прибыли.
+</div>
+
+<script>
+  const weightInput = document.getElementById('weight');
+  const percentInput = document.getElementById('percent');
+  const purchasePriceInput = document.getElementById('purchasePrice');
+  const sellingPriceInput = document.getElementById('sellingPrice');
+  const extraCostsInput = document.getElementById('extraCosts');
+  const resultDiv = document.getElementById('result');
+
+  function calculate() {
+    const weight = parseFloat(weightInput.value);
+    const percent = parseFloat(percentInput.value);
+    const purchasePrice = parseFloat(purchasePriceInput.value);
+    const sellingPrice = parseFloat(sellingPriceInput.value);
+    const extraCosts = parseFloat(extraCostsInput.value);
+
+    if (isNaN(weight) || weight < 0) {
+      resultDiv.textContent = "Пожалуйста, введите корректный вес (0 и больше).";
+      return;
+    }
+    if (isNaN(percent) || percent < 0) {
+      resultDiv.textContent = "Пожалуйста, введите корректный процент (0 и больше).";
+      return;
+    }
+    if (isNaN(purchasePrice) || purchasePrice < 0) {
+      resultDiv.textContent = "Пожалуйста, введите корректную цену закупки (0 и больше).";
+      return;
+    }
+    if (isNaN(sellingPrice) || sellingPrice < 0) {
+      resultDiv.textContent = "Пожалуйста, введите корректную цену продажи (0 и больше).";
+      return;
+    }
+    if (sellingPrice < purchasePrice) {
+      resultDiv.textContent = "Цена продажи должна быть не меньше цены закупки.";
+      return;
+    }
+    if (isNaN(extraCosts) || extraCosts < 0) {
+      resultDiv.textContent = "Пожалуйста, введите корректные дополнительные траты (0 и больше).";
+      return;
+    }
+
+    const profitPerKg = sellingPrice - purchasePrice;
+    const totalProfit = profitPerKg * weight;
+    const smmFee = totalProfit * (percent / 100);
+    // Вычитаем дополнительные траты из чистой прибыли
+    const netProfit = totalProfit - smmFee - extraCosts;
+
+    resultDiv.innerHTML = `
+      <strong>Результаты расчёта:</strong><br>
+      Прибыль с 1 кг: <b>${profitPerKg.toFixed(2)} сомони</b><br>
+      Общая прибыль (до вычета СММ): <b>${totalProfit.toFixed(2)} сомони</b><br>
+      Выплата СММщику (${percent.toFixed(2)}%): <b>${smmFee.toFixed(2)} сомони</b><br>
+      Дополнительные траты: <b>${extraCosts.toFixed(2)} сомони</b><br>
+      <hr>
+      <strong>Чистая прибыль:</strong> <b>${netProfit.toFixed(2)} сомони</b>
+    `;
+  }
+
+  // Запускаем расчёт при загрузке и при изменении любого поля
+  calculate();
+</script>
+
+</body>
+</html>
